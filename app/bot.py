@@ -45,6 +45,10 @@ def require_private(message: types.Message):
     return message.chat.type == types.ChatType.PRIVATE
 
 
+def require_public(message: types.Message):
+    return message.chat.type != types.ChatType.PRIVATE
+
+
 @dp.message_handler(require_private, commands=['start', 'help'])
 async def welcome(message: types.Message):
     text = '''Отправьте ссылку на свой leetcode профиль: "https://leetcode.com/username/"'''
@@ -52,11 +56,8 @@ async def welcome(message: types.Message):
 
 
 
-@dp.message_handler(commands=['check',], content_types=[types.ContentType.TEXT])
+@dp.message_handler(require_public, commands=['check',], content_types=[types.ContentType.TEXT])
 async def check(message: types.Message):
-    if message.chat.type == types.ChatType.PRIVATE:
-        return
-
     wait_msg = await message.reply('Обработка результатов за последние 12 часов...')
 
     top_performers = await _get_top_performers()
