@@ -32,13 +32,8 @@ def require_admin(message):
     return message.chat.type == types.ChatType.PRIVATE and message.chat.id == settings.OWNER_ID
 
 
-@dp.message_handler(require_admin, commands=['todo',], content_types=[types.ContentType.TEXT])
-async def todo(message: types.Message):
-    await message.reply('todo')
-
-
-@dp.message_handler(require_admin, commands=['today',], content_types=[types.ContentType.TEXT])
-async def todo(message: types.Message):
+@dp.message_handler(require_admin, commands=['check',], content_types=[types.ContentType.TEXT])
+async def check(message: types.Message):
     wait_msg = await message.reply('Обработка результатов за последние 12 часов...')
 
     top_performers = await _get_top_performers()
