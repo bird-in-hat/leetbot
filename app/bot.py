@@ -32,34 +32,10 @@ def require_admin(message):
     return message.chat.type == types.ChatType.PRIVATE and message.chat.id == settings.OWNER_ID
 
 
-@dp.message_handler(require_admin, commands=['check',], content_types=[types.ContentType.TEXT])
-async def check(message: types.Message):
-    wait_msg = await message.reply('Обработка результатов за последние 12 часов...')
-
-    top_performers = await _get_top_performers()
-    header = 'Решенные задачи за 12 часов\n\n'
-    text = '\n'.join([f'<b>{len(subs)}</b>: {_user_to_str(u)} {[s.name for s in subs]}' for u, subs in top_performers.items()])
-
-    await wait_msg.delete()
-
-    await _chunked_response(header + text, message)
-
-
-async def _get_top_performers() -> dict[db.User, list[api.Submission]]:
-    user_submissions = {}
-
-    for u in db.list_users():
-        if subs := await api.fetch_latest_submissions(u.profile_url):
-            user_submissions[u] = subs
-        await asyncio.sleep(0.5)
-
-    return dict(sorted(user_submissions.items(), key=lambda item: len(item[1]), reverse=True))
-
-
-def _user_to_str(u: db.User) -> str:
-    if u.username:
-        return f'@{u.username}'
-    return f'[{u.name}]({u.profile_url})'
+@dp.message_handler(require_admin, commands=['list_users',], content_types=[types.ContentType.TEXT])
+async def list_users(message: types.Message):
+    text = '\n'.join([_user_to_str(u) for u in db.list_users()])
+    await _chunked_response(text, message)
 
 
 # Public Bot Commands
@@ -73,6 +49,23 @@ def require_private(message: types.Message):
 async def welcome(message: types.Message):
     text = '''Отправьте ссылку на свой leetcode профиль: "https://leetcode.com/username/"'''
     await message.reply(text, disable_web_page_preview=True)
+
+
+
+@dp.message_handler(commands=['check',], content_types=[types.ContentType.TEXT])
+async def check(message: types.Message):
+    if message.chat.type == types.ChatType.PRIVATE:
+        return
+
+    wait_msg = await message.reply('Обработка результатов за последние 12 часов...')
+
+    top_performers = await _get_top_performers()
+    header = 'Решенные задачи за 12 часов\n\n'
+    text = '\n'.join([f'<b>{len(subs)}</b>: {_user_to_str(u)} {[s.name for s in subs]}' for u, subs in top_performers.items()])
+
+    await wait_msg.delete()
+
+    await _chunked_response(header + text, message)
 
 
 @dp.message_handler(require_private, content_types=[types.ContentType.TEXT])
@@ -113,6 +106,23 @@ async def _chunked_response(text: str, message: types.Message):
 def _is_valid_profile_url(url):
     pattern = r"https://leetcode\.com/[a-zA-Z0-9_]+/?"
     return bool(re.fullmatch(pattern, url))
+
+
+async def _get_top_performers() -> dict[db.User, list[api.Submission]]:
+    user_submissions = {}
+
+    for u in db.list_users():
+        if subs := await api.fetch_latest_submissions(u.profile_url):
+            user_submissions[u] = subs
+        await asyncio.sleep(0.5)
+
+    return dict(sorted(user_submissions.items(), key=lambda item: len(item[1]), reverse=True))
+
+
+def _user_to_str(u: db.User) -> str:
+    if u.username:
+        return f'@{u.username}'
+    return f'[{u.name}]({u.profile_url})'
 
 
 if __name__ == '__main__':
