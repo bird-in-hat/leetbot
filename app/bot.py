@@ -41,9 +41,9 @@ async def todo(message: types.Message):
 async def todo(message: types.Message):
     wait_msg = await message.reply('Обработка результатов за последние 12 часов...')
 
-    top_performers = _get_top_performers()
+    top_performers = await _get_top_performers()
     header = 'Топ последних 12 часов\n\n'
-    text = '\n'.join([f'{_user_to_str(u)}:{count}' for u, count in top_performers.items()])
+    text = '\n'.join([f'{_user_to_str(u)}: {count}' for u, count in top_performers.items()])
 
     await wait_msg.delete()
 
@@ -63,8 +63,9 @@ async def _get_top_performers() -> dict[db.User, int]:
 
 def _user_to_str(u: db.User) -> str:
     if u.username:
-        return u.username
+        return f'@{u.username}'
     return f'[{u.name}]({u.profile_url})'
+
 
 # Public Bot Commands
 
