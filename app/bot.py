@@ -38,22 +38,22 @@ async def check(message: types.Message):
 
     top_performers = await _get_top_performers()
     header = 'Решенные задачи за 12 часов\n\n'
-    text = '\n'.join([f'{count}: {_user_to_str(u)}' for u, count in top_performers.items()])
+    text = '\n'.join([f'<b>{len(subs)}</b>: {_user_to_str(u)} {[s.name for s in subs]}' for u, subs in top_performers.items()])
 
     await wait_msg.delete()
 
     await _chunked_response(header + text, message)
 
 
-async def _get_top_performers() -> dict[db.User, int]:
+async def _get_top_performers() -> dict[db.User, list[api.Submission]]:
     user_submissions = {}
 
     for u in db.list_users():
         if subs := await api.fetch_latest_submissions(u.profile_url):
-            user_submissions[u] = len(subs)
+            user_submissions[u] = subs
         await asyncio.sleep(0.5)
 
-    return dict(sorted(user_submissions.items(), key=lambda item: item[1], reverse=True))
+    return dict(sorted(user_submissions.items(), key=lambda item: len(item[1]), reverse=True))
 
 
 def _user_to_str(u: db.User) -> str:
@@ -105,7 +105,7 @@ async def _chunked_response(text: str, message: types.Message):
     chunk_size = 4000  # telegram limit
     while True:
         if chunk := text[i: i + chunk_size]:
-            await message.reply(chunk)
+            await message.reply(chunk, parse_mode=types.ParseMode.HTML)
             i += chunk_size
         else:
             return
