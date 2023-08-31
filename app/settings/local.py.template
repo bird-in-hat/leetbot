@@ -1,0 +1,6 @@
+# This is an example settings/local.py file.
+# These settings overrides what's in settings/base.py
+
+BOT_TOKEN = ''
+OWNER_ID = ''
+SQLITE_PATH = '/app/.db/db.sqlite'

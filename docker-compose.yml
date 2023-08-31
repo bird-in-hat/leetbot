@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      target: bot-base
+    volumes:
+      - ./.db/:/app/.db/
+    command: python3 -u bot.py
+    restart: always
