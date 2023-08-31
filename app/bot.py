@@ -42,8 +42,8 @@ async def todo(message: types.Message):
     wait_msg = await message.reply('Обработка результатов за последние 12 часов...')
 
     top_performers = await _get_top_performers()
-    header = 'Топ последних 12 часов\n\n'
-    text = '\n'.join([f'{_user_to_str(u)}: {count}' for u, count in top_performers.items()])
+    header = 'Решенные задачи за 12 часов\n\n'
+    text = '\n'.join([f'{count}: {_user_to_str(u)}' for u, count in top_performers.items()])
 
     await wait_msg.delete()
 
@@ -58,7 +58,7 @@ async def _get_top_performers() -> dict[db.User, int]:
             user_submissions[u] = len(subs)
         await asyncio.sleep(0.5)
 
-    return dict(sorted(user_submissions.items(), key=lambda item: item[1]))
+    return dict(sorted(user_submissions.items(), key=lambda item: item[1], reverse=True))
 
 
 def _user_to_str(u: db.User) -> str:

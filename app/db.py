@@ -33,6 +33,7 @@ def add_profile(telegram_id, username, name, profile_url: str):
     if user := session.query(User).filter_by(telegram_id=telegram_id).first():
         user.username = username or user.username or ''
         user.name = name
+        user.profile_url = profile_url
     else:
         user = User(telegram_id=telegram_id, username=username or '', name=name, profile_url=profile_url)
         session.add(user)

@@ -27,6 +27,10 @@ async def fetch_latest_submissions(profile_url, today_only=True) -> list[Submiss
         time = span_tags[1].text
 
         if today_only:
+            if 'year' in time:
+                break
+            if 'month' in time:
+                break
             if 'day' in time:
                 break
             if 'hours' in time:
